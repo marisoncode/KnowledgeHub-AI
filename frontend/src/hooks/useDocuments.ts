@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DocumentItem } from '../types/document';
+import type { DocumentItem } from '../types/document';
 import { documentsApi } from '../services/documentsApi';
 
 export function useDocuments() {
@@ -46,3 +46,4 @@ export function useDocuments() {
     refreshDocuments: fetchDocuments,
   };
 }
+

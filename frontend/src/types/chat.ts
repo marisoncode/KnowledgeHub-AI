@@ -22,3 +22,4 @@ export interface ChatAskResponse {
   answer: string;
   sources: SourceCitation[];
 }
+

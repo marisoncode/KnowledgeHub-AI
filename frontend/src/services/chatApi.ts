@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { ChatAskResponse } from '../types/chat';
+import type { ChatAskResponse } from '../types/chat';
 
 export const chatApi = {
   async askQuestion(documentId: number, question: string): Promise<ChatAskResponse> {
@@ -10,3 +10,4 @@ export const chatApi = {
     return response.data;
   },
 };
+

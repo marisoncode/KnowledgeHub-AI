@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { DocumentItem, UploadProgress } from '../types/document';
+import type { DocumentItem, UploadProgress } from '../types/document';
 
 export const documentsApi = {
   async getDocuments(): Promise<DocumentItem[]> {
@@ -32,3 +32,4 @@ export const documentsApi = {
     return response.data;
   },
 };
+
