@@ -1,9 +1,10 @@
 from fastapi import APIRouter, UploadFile, File
+import os
 
 from app.services.pdf_service import extract_pages
 from app.services.chunk_service import chunk_pages
 from app.services.embedding_service import generate_embeddings
-from app.services.vector_service import create_collection, store_embeddings
+from app.services.vector_service import create_collection, store_embeddings, delete_document_vectors
 
 
 router = APIRouter(
@@ -24,31 +25,38 @@ async def process_document(
     with open(temp_path, "wb") as buffer:
         buffer.write(file_content)
 
-    # 1. Extract text page by page
-    pages = extract_pages(temp_path)
+    try:
+        # 1. Extract text page by page
+        pages = extract_pages(temp_path)
 
-    # 2. Split pages into chunks
-    chunks = chunk_pages(pages)
+        # 2. Split pages into chunks
+        chunks = chunk_pages(pages)
 
-    # 3. Extract only text for embedding
-    chunk_texts = [
-        chunk["text"]
-        for chunk in chunks
-    ]
+        # 3. Extract only text for embedding
+        chunk_texts = [
+            chunk["text"]
+            for chunk in chunks
+        ]
 
-    # 4. Generate embeddings
-    embeddings = generate_embeddings(chunk_texts)
+        # 4. Generate embeddings
+        embeddings = generate_embeddings(chunk_texts)
 
-    # 5. Create Qdrant collection
-    create_collection()
+        # 5. Create Qdrant collection
+        create_collection()
 
-    # 6. Store chunks + page metadata
-    store_embeddings(
-        chunks=chunks,
-        embeddings=embeddings,
-        document_id=document_id,
-        filename=file.filename
-    )
+        # 6. Store chunks + page metadata
+        store_embeddings(
+            chunks=chunks,
+            embeddings=embeddings,
+            document_id=document_id,
+            filename=file.filename
+        )
+    finally:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
 
     return {
         "document_id": document_id,
@@ -57,3 +65,9 @@ async def process_document(
         "chunk_count": len(chunks),
         "message": "Document processed and stored successfully"
     }
+
+
+@router.delete("/{document_id}")
+def delete_document(document_id: int):
+    delete_document_vectors(document_id)
+    return {"message": f"Document {document_id} vectors deleted successfully"}

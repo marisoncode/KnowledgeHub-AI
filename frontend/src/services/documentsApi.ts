@@ -31,5 +31,9 @@ export const documentsApi = {
 
     return response.data;
   },
-};
 
+  async deleteDocument(id: number): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/documents/${id}`);
+    return response.data;
+  },
+};

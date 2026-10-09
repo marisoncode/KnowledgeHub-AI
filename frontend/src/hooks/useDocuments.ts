@@ -34,6 +34,16 @@ export function useDocuments() {
     fetchDocuments();
   }, [fetchDocuments]);
 
+  const deleteDocument = useCallback(async (id: number) => {
+    try {
+      await documentsApi.deleteDocument(id);
+      setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+      setSelectedDocumentId((prevId) => (prevId === id ? null : prevId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete document');
+    }
+  }, []);
+
   const selectedDocument = documents.find((doc) => doc.id === selectedDocumentId) || null;
 
   return {
@@ -44,6 +54,6 @@ export function useDocuments() {
     isLoading,
     error,
     refreshDocuments: fetchDocuments,
+    deleteDocument,
   };
 }
-

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckCircle2, X } from 'lucide-react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { ChatContainer } from '../chat/ChatContainer';
@@ -9,6 +10,7 @@ import { useChat } from '../../hooks/useChat';
 export const WorkspaceLayout: React.FC = () => {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const {
     documents,
@@ -18,6 +20,7 @@ export const WorkspaceLayout: React.FC = () => {
     isLoading: isDocsLoading,
     error: docsError,
     refreshDocuments,
+    deleteDocument,
   } = useDocuments();
 
   const {
@@ -29,8 +32,34 @@ export const WorkspaceLayout: React.FC = () => {
     clearChat,
   } = useChat(selectedDocumentId);
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  const handleDeleteDocument = async (id: number, filename: string) => {
+    await deleteDocument(id);
+    showToast(`Document "${filename}" deleted successfully.`);
+  };
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#F8F8F5]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#F8F8F5] relative">
+      {/* Toast Notification Alert */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 flex items-center space-x-2.5 px-4 py-3 bg-[#1C1D1F] text-white rounded-lg shadow-xl text-xs animate-in fade-in slide-in-from-top-2 duration-200 border border-slate-700">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-medium">{toastMessage}</span>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-white ml-2 p-0.5"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Top Header */}
       <Header
         onOpenUpload={() => setIsUploadOpen(true)}
@@ -45,6 +74,7 @@ export const WorkspaceLayout: React.FC = () => {
           documents={documents}
           selectedDocumentId={selectedDocumentId}
           onSelectDocument={setSelectedDocumentId}
+          onDeleteDocument={handleDeleteDocument}
           onOpenUpload={() => setIsUploadOpen(true)}
           onRefresh={refreshDocuments}
           isLoading={isDocsLoading}
@@ -74,9 +104,9 @@ export const WorkspaceLayout: React.FC = () => {
         onUploadSuccess={(newDoc) => {
           refreshDocuments();
           setSelectedDocumentId(newDoc.id);
+          showToast(`Document "${newDoc.filename}" uploaded and indexed.`);
         }}
       />
     </div>
   );
 };
-

@@ -139,10 +139,19 @@ KnowledgeHub-AI/
 
 ### 2. Setting Up Qdrant Vector Database
 
-Start Qdrant via Docker:
+#### Initial Setup (One-Time Only):
+Create the `qdrant_local` container instance on port 6333:
 ```bash
-docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
+docker run -d --name qdrant_local -p 6333:6333 -p 6334:6334 qdrant/qdrant
 ```
+
+#### Daily Development (Re-starting Qdrant):
+To start your existing container and preserve all previously indexed vector data:
+```bash
+docker start qdrant_local
+```
+*(Or click the **▶️ Play button** next to `qdrant_local` in Docker Desktop)*
+
 
 ---
 

@@ -1,4 +1,5 @@
 from pypdf import PdfReader
+import re
 
 
 def extract_pages(file_path: str) -> list[dict]:
@@ -10,9 +11,13 @@ def extract_pages(file_path: str) -> list[dict]:
         text = page.extract_text()
 
         if text and text.strip():
+            # Clean up excessive newlines and whitespace formatting
+            cleaned_text = re.sub(r'\n\s*\n', '\n', text)
+            cleaned_text = re.sub(r'[ \t]+', ' ', cleaned_text).strip()
+
             pages.append({
                 "page": page_number,
-                "text": text.strip()
+                "text": cleaned_text
             })
 
     return pages

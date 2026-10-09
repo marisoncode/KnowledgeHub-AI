@@ -8,12 +8,15 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    FilterSelector,
 )
 
 
 client = QdrantClient(
     host="localhost",
-    port=6333
+    port=6333,
+    timeout=30,
+    check_compatibility=False
 )
 
 COLLECTION_NAME = "knowledgehub_documents"
@@ -73,23 +76,46 @@ def search_similar_chunks(
     query_embedding: list[float],
     document_id: int,
     limit: int = 3,
-    score_threshold: float = 0.30
+    score_threshold: float = 0.15
 ):
-    results = client.query_points(
-        collection_name=COLLECTION_NAME,
-        query=query_embedding,
-        query_filter=Filter(
-            must=[
-                FieldCondition(
-                    key="document_id",
-                    match=MatchValue(
-                        value=document_id
+    create_collection()
+    try:
+        results = client.query_points(
+            collection_name=COLLECTION_NAME,
+            query=query_embedding,
+            query_filter=Filter(
+                must=[
+                    FieldCondition(
+                        key="document_id",
+                        match=MatchValue(
+                            value=document_id
+                        )
                     )
-                )
-            ]
-        ),
-        limit=limit,
-        score_threshold=score_threshold,
-    )
+                ]
+            ),
+            limit=limit,
+            score_threshold=score_threshold,
+        )
+        return results.points
+    except Exception:
+        return []
 
-    return results.points
+
+def delete_document_vectors(document_id: int):
+    create_collection()
+    try:
+        client.delete(
+            collection_name=COLLECTION_NAME,
+            points_selector=FilterSelector(
+                filter=Filter(
+                    must=[
+                        FieldCondition(
+                            key="document_id",
+                            match=MatchValue(value=document_id)
+                        )
+                    ]
+                )
+            )
+        )
+    except Exception:
+        pass

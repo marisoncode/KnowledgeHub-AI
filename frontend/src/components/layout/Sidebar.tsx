@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Search, RefreshCw, Plus } from 'lucide-react';
+import { FileText, Search, RefreshCw, Plus, Trash2 } from 'lucide-react';
 import type { DocumentItem } from '../../types/document';
 import { Badge } from '../ui/Badge';
 
@@ -7,6 +7,7 @@ interface SidebarProps {
   documents: DocumentItem[];
   selectedDocumentId: number | null;
   onSelectDocument: (id: number) => void;
+  onDeleteDocument: (id: number, filename: string) => void;
   onOpenUpload: () => void;
   onRefresh: () => void;
   isLoading: boolean;
@@ -18,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   documents,
   selectedDocumentId,
   onSelectDocument,
+  onDeleteDocument,
   onOpenUpload,
   onRefresh,
   isLoading,
@@ -29,6 +31,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const filteredDocuments = documents.filter((doc) =>
     doc.filename.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleDelete = (e: React.MouseEvent, id: number, filename: string) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete "${filename}"? This will remove the file, database record, and Qdrant vectors.`)) {
+      onDeleteDocument(id, filename);
+    }
+  };
 
   return (
     <>
@@ -122,6 +131,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {doc.filename}
                       </p>
                     </div>
+
+                    {/* Delete Icon Button */}
+                    <button
+                      onClick={(e) => handleDelete(e, doc.id, doc.filename)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#88898E] hover:text-rose-600 rounded hover:bg-rose-50"
+                      title="Delete document"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
 
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#F0F0EB] text-[11px] text-[#77787D]">
@@ -148,4 +166,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
-
